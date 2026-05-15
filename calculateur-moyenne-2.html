@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>حاسبة المعدل - ليسانس سنة ثانية</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #1a7a4a;
+    --green-light: #2ecc71;
+    --green-pale: #e8f8f0;
+    --red: #e74c3c;
+    --red-pale: #fdecea;
+    --gold: #f39c12;
+    --dark: #1a1a2e;
+    --gray: #6c757d;
+    --bg: #f4f7f5;
+    --card: #ffffff;
+    --border: #dce8e2;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Cairo', sans-serif;
+    background: var(--bg);
+    color: var(--dark);
+    min-height: 100vh;
+    padding: 20px 12px 60px;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+
+  header h1 {
+    font-size: 1.6rem;
+    font-weight: 900;
+    color: var(--green);
+    line-height: 1.3;
+  }
+
+  header p {
+    font-size: 0.85rem;
+    color: var(--gray);
+    margin-top: 4px;
+  }
+
+  .semester-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    background: var(--card);
+    border-radius: 14px;
+    padding: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  }
+
+  .tab {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 10px;
+    font-family: 'Cairo', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: transparent;
+    color: var(--gray);
+  }
+
+  .tab.active {
+    background: var(--green);
+    color: white;
+    box-shadow: 0 3px 10px rgba(26,122,74,0.3);
+  }
+
+  .card {
+    background: var(--card);
+    border-radius: 16px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.07);
+    margin-bottom: 16px;
+    overflow: hidden;
+  }
+
+  .card-header {
+    background: var(--green);
+    color: white;
+    padding: 12px 16px;
+    font-size: 0.95rem;
+    font-weight: 700;
+  }
+
+  .module-row {
+    border-bottom: 1px solid var(--border);
+    padding: 14px 16px;
+  }
+
+  .module-row:last-child { border-bottom: none; }
+
+  .module-name {
+    font-size: 0.92rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+    color: var(--dark);
+  }
+
+  .coef-badge {
+    display: inline-block;
+    background: var(--green-pale);
+    color: var(--green);
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 20px;
+    margin-right: 6px;
+  }
+
+  .inputs-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    flex: 1;
+    min-width: 80px;
+  }
+
+  .input-group label {
+    font-size: 0.72rem;
+    color: var(--gray);
+    font-weight: 600;
+  }
+
+  .input-group input {
+    padding: 8px 10px;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-family: 'Cairo', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-align: center;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+
+  .input-group input:focus {
+    border-color: var(--green);
+  }
+
+  .input-group input.invalid {
+    border-color: var(--red);
+    background: var(--red-pale);
+  }
+
+  .module-avg {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-align: center;
+    min-width: 52px;
+  }
+
+  .module-avg span {
+    display: block;
+    font-size: 0.65rem;
+    color: var(--gray);
+    font-weight: 400;
+    margin-bottom: 2px;
+  }
+
+  .avg-val {
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 1rem;
+  }
+
+  .avg-val.pass { background: var(--green-pale); color: var(--green); }
+  .avg-val.fail { background: var(--red-pale); color: var(--red); }
+  .avg-val.empty { background: #f0f0f0; color: #aaa; }
+
+  /* Result section */
+  .result-card {
+    background: var(--green);
+    border-radius: 20px;
+    padding: 24px 20px;
+    text-align: center;
+    margin-top: 20px;
+    box-shadow: 0 6px 24px rgba(26,122,74,0.3);
+    color: white;
+  }
+
+  .result-card .label {
+    font-size: 0.9rem;
+    opacity: 0.85;
+    margin-bottom: 8px;
+  }
+
+  .result-card .big-avg {
+    font-size: 3.2rem;
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .result-card .status {
+    font-size: 1rem;
+    font-weight: 700;
+    padding: 6px 20px;
+    border-radius: 30px;
+    display: inline-block;
+    margin-top: 8px;
+  }
+
+  .status.pass { background: white; color: var(--green); }
+  .status.fail { background: var(--red); color: white; }
+  .status.empty { background: rgba(255,255,255,0.2); color: white; }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 16px;
+  }
+
+  .stat-box {
+    background: rgba(255,255,255,0.15);
+    border-radius: 12px;
+    padding: 12px;
+  }
+
+  .stat-box .s-label { font-size: 0.72rem; opacity: 0.8; }
+  .stat-box .s-val { font-size: 1.3rem; font-weight: 900; }
+
+  .note-box {
+    background: #fff8e1;
+    border-right: 4px solid var(--gold);
+    border-radius: 10px;
+    padding: 12px 14px;
+    font-size: 0.8rem;
+    color: #7d5a00;
+    margin-top: 14px;
+    line-height: 1.6;
+  }
+
+  .semester-section { display: none; }
+  .semester-section.active { display: block; }
+
+  .calc-btn {
+    width: 100%;
+    padding: 15px;
+    background: var(--green);
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-family: 'Cairo', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 10px;
+    box-shadow: 0 4px 14px rgba(26,122,74,0.35);
+    transition: transform 0.1s, box-shadow 0.1s;
+  }
+
+  .calc-btn:active {
+    transform: scale(0.98);
+    box-shadow: 0 2px 8px rgba(26,122,74,0.2);
+  }
+
+  .reset-btn {
+    width: 100%;
+    padding: 11px;
+    background: transparent;
+    color: var(--gray);
+    border: 1.5px solid var(--border);
+    border-radius: 14px;
+    font-family: 'Cairo', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    margin-top: 8px;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🎓 حاسبة المعدل<br>ليسانس سنة ثانية</h1>
+  <p>أدخل علاماتك لحساب معدلك التلقائي</p>
+</header>
+
+<div class="semester-tabs" style="pointer-events:none;">
+  <button class="tab active">السداسي الرابع</button>
+</div>
+
+<!-- SEMESTER 3 -->
+<div id="sem3" class="semester-section active">
+  <div class="note-box">
+    ⚠️ المواد التي تحتوي على امتحان + TD: المعدل = 50% امتحان + 50% TD
+  </div>
+
+  <br>
+
+  <div class="card">
+    <div class="card-header">📐 رياضيات 5 — معامل 2</div>
+    <div class="module-row" id="row-s3-math5">
+      <div class="module-name">رياضيات 5</div>
+      <div class="inputs-row">
+        <div class="input-group">
+          <label>امتحان /20</label>
+          <input type="number" min="0" max="20" step="0.25" placeholder="—" id="s3-math5-exam" oninput="calcAll()">
+        </div>
+        <div class="input-group">
+          <label>TD /20</label>
+          <input type="number" min="0" max="20" step="0.25" placeholder="—" id="s3-math5-td" oninput="calcAll()">
+        </div>
+        <div class="module-avg" id="avg-s3-math5">
+          <span>المعدل</span>
+          <div class="avg-val empty">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">📐 رياضيات 6 — معامل 2</div>
+    <div class="module-row">
+      <div class="module-name">رياضيات 6</div>
+      <div class="inputs-row">
+        <div class="input-group">
+          <label>امتحان /20</label>
+          <input type="number" min="0" max="20" step="0.25" placeholder="—" id="s3-math6-exam" oninput="calcAll()">
+        </div>
+        <div class="input-group">
+          <label>TD /20</label>
+          <input type="number" min="0" max="20" step="0.25" placeholder="—" id="s3-math6-td" oninput="calcAll()">
+        </div>
+        <div class="module-avg" id="avg-s3-math6">
+          <span>المعدل</span>
+          <div class="avg-val empty">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">⚙️ ميكانيك — معامل 3</div>
+    <div class="module-row">
+      <div class="module-name">ميكانيك</div>
+      <div class="inputs-row">
+        <div class="input-group">
+          <label>امتحان /20</label>
+          <input type="number" min="0" max="20" step="0.25" placeholder="—" id="s3-meca-exam" oninput="calcAll()">
+        </div>
+        <div class="input-group">
+          <label>TD /20</label>
+          <input type="number" min="0" max="20" step="0.25" placeholder="—" id="s3-meca-td" oninput="calcAll()">
+        </div>
+        <div class="module-avg" id="avg-s3-meca">
+          <span>المعدل</span>
+          <div class="avg-val empty">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">🔩 قوة المعدات — معامل 2</div>
+    <div class="module-row">
+      <div class="module-name">قوة المعدات (Résistance des matériaux)</div>
+      <div class="inputs-row">
+        <div class="input-group">
+          <label>امتحان /20</label>
+          <input type="number" min="0" max="20" step="0.25" placeholder="—" id="s3-rdm-exam" oninput="calcAll()">
+        </div>
+        <div class="input-group">
+          <label>TD /20</label>
+          <input type="number" min="0" max="20" step="0.25" placeholder="—" id="s3-rdm-td" oninput="calcAll()">
+        </div>
+        <div class="module-avg" id="avg-s3-rdm">
+          <span>المعدل</span>
+          <div class="avg-val empty">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">🧪 تطبيقية — معامل 2</div>
+    <div class="module-row">
+      <div class="module-name">تطبيقية (Thermodynamique appliquée)</div>
+      <div class="inputs-row">
+        <div class="input-group">
+          <label>امتحان /20</label>
+          <input type="number" min="0" max="20" step="0.25" placeholder="—" id="s3-thermo-exam" oninput="calcAll()">
+        </div>
+        <div class="input-group">
+          <label>TD /20</label>
+          <input type="number" min="0" max="20" step="0.25" placeholder="—" id="s3-thermo-td" oninput="calcAll()">
+        </div>
+        <div class="module-avg" id="avg-s3-thermo">
+          <span>المعدل</span>
+          <div class="avg-val empty">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">🔬 أعمال تطبيقية — معامل 1 كل منها</div>
+
+    <div class="module-row">
+      <div class="module-name">TP ميكانيك</div>
+      <div class="inputs-row">
+        <div class="input-group">
+          <label>علامة TP /20</label>
+          <input type="number" min="0" max="20" step="0.25" placeholder="—" id="s3-tp-meca" oninput="calcAll()">
+        </div>
+        <div class="module-avg" id="avg-s3-tp-meca">
+          <span>المعدل</span>
+          <div class="avg-val empty">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="module-row">
+      <div class="module-name">TP تطبيقية 1</div>
+      <div class="inputs-row">
+        <div class="input-group">
+          <label>علامة TP /20</label>
+          <input type="number" min="0" max="20" step="0.25" placeholder="—" id="s3-tp1" oninput="calcAll()">
+        </div>
+        <div class="module-avg" id="avg-s3-tp1">
+          <span>المعدل</span>
+          <div class="avg-val empty">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="module-row">
+      <div class="module-name">TP تطبيقية 2</div>
+      <div class="inputs-row">
+        <div class="input-group">
+          <label>علامة TP /20</label>
+          <input type="number" min="0" max="20" step="0.25" placeholder="—" id="s3-tp2" oninput="calcAll()">
+        </div>
+        <div class="module-avg" id="avg-s3-tp2">
+          <span>المعدل</span>
+          <div class="avg-val empty">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="module-row">
+      <div class="module-name">TP قوة المعدات</div>
+      <div class="inputs-row">
+        <div class="input-group">
+          <label>علامة TP /20</label>
+          <input type="number" min="0" max="20" step="0.25" placeholder="—" id="s3-tp-rdm" oninput="calcAll()">
+        </div>
+        <div class="module-avg" id="avg-s3-tp-rdm">
+          <span>المعدل</span>
+          <div class="avg-val empty">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">🌐 لغات — معامل 1 كل منها</div>
+
+    <div class="module-row">
+      <div class="module-name">إنجليزية</div>
+      <div class="inputs-row">
+        <div class="input-group">
+          <label>علامة /20</label>
+          <input type="number" min="0" max="20" step="0.25" placeholder="—" id="s3-eng" oninput="calcAll()">
+        </div>
+        <div class="module-avg" id="avg-s3-eng">
+          <span>المعدل</span>
+          <div class="avg-val empty">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="module-row">
+      <div class="module-name">Tec (تقنية التعبير)</div>
+      <div class="inputs-row">
+        <div class="input-group">
+          <label>علامة /20</label>
+          <input type="number" min="0" max="20" step="0.25" placeholder="—" id="s3-tec" oninput="calcAll()">
+        </div>
+        <div class="module-avg" id="avg-s3-tec">
+          <span>المعدل</span>
+          <div class="avg-val empty">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="result-card" id="result-s3">
+    <div class="label">معدل السداسي الرابع</div>
+    <div class="big-avg" id="big-avg-s3">—</div>
+    <div class="stats-grid">
+      <div class="stat-box">
+        <div class="s-label">مجموع النقاط</div>
+        <div class="s-val" id="total-pts-s3">—</div>
+      </div>
+      <div class="stat-box">
+        <div class="s-label">مجموع المعاملات</div>
+        <div class="s-val" id="total-coef-s3">17</div>
+      </div>
+    </div>
+    <div id="status-s3" class="status empty">أدخل علاماتك</div>
+  </div>
+
+  <button class="reset-btn" onclick="resetSem(3)">🔄 إعادة تعيين السداسي الرابع</button>
+</div>
+
+<script>
+  function getVal(id) {
+    const el = document.getElementById(id);
+    if (!el) return null;
+    const v = parseFloat(el.value);
+    return isNaN(v) ? null : v;
+  }
+
+  function calcModuleAvg(mod) {
+    if (mod.hasTD) {
+      const exam = getVal(mod.id + '-exam');
+      const td = getVal(mod.id + '-td');
+      if (exam === null && td === null) return null;
+      if (exam !== null && td !== null) return (exam * 0.5 + td * 0.5);
+      if (exam !== null) return exam;
+      return td;
+    } else {
+      return getVal(mod.id);
+    }
+  }
+
+  function updateAvgDisplay(avgId, val) {
+    const container = document.getElementById(avgId);
+    if (!container) return;
+    const div = container.querySelector('.avg-val');
+    if (val === null) {
+      div.className = 'avg-val empty';
+      div.textContent = '—';
+    } else {
+      div.className = val >= 10 ? 'avg-val pass' : 'avg-val fail';
+      div.textContent = val.toFixed(2);
+    }
+  }
+
+  const sem3Modules = [
+    { id: 's3-math5', coef: 2, hasTD: true },
+    { id: 's3-math6', coef: 2, hasTD: true },
+    { id: 's3-meca', coef: 3, hasTD: true },
+    { id: 's3-rdm', coef: 2, hasTD: true },
+    { id: 's3-thermo', coef: 2, hasTD: true },
+    { id: 's3-tp-meca', coef: 1, hasTD: false },
+    { id: 's3-tp1', coef: 1, hasTD: false },
+    { id: 's3-tp2', coef: 1, hasTD: false },
+    { id: 's3-tp-rdm', coef: 1, hasTD: false },
+    { id: 's3-eng', coef: 1, hasTD: false },
+    { id: 's3-tec', coef: 1, hasTD: false },
+  ];
+
+  function calcAll() {
+    let totalWeighted = 0;
+    let totalCoef = 0;
+    let hasAny = false;
+
+    for (const mod of sem3Modules) {
+      const avg = calcModuleAvg(mod);
+      updateAvgDisplay('avg-' + mod.id, avg);
+      if (avg !== null) {
+        totalWeighted += avg * mod.coef;
+        totalCoef += mod.coef;
+        hasAny = true;
+      }
+    }
+
+    const bigAvg = document.getElementById('big-avg-s3');
+    const ptsEl = document.getElementById('total-pts-s3');
+    const statusEl = document.getElementById('status-s3');
+
+    if (!hasAny) {
+      bigAvg.textContent = '—';
+      ptsEl.textContent = '—';
+      statusEl.className = 'status empty';
+      statusEl.textContent = 'أدخل علاماتك';
+      return;
+    }
+
+    const moyenne = totalWeighted / totalCoef;
+    bigAvg.textContent = moyenne.toFixed(2) + ' /20';
+    ptsEl.textContent = totalWeighted.toFixed(2);
+
+    if (moyenne >= 10) {
+      statusEl.className = 'status pass';
+      statusEl.textContent = moyenne >= 14 ? '🏆 ممتاز!' : moyenne >= 12 ? '✅ حسن' : '✅ ناجح';
+    } else {
+      statusEl.className = 'status fail';
+      statusEl.textContent = '❌ راسب — تحتاج إعادة';
+    }
+  }
+
+  function resetSem(n) {
+    const section = document.getElementById('sem' + n);
+    section.querySelectorAll('input').forEach(inp => { inp.value = ''; });
+    calcAll();
+  }
+
+  calcAll();
+</script>
+</body>
+</html>
